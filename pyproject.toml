@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "frappe-erpnext-docker-starter"
+version = "0.1.0"
+description = "Frappe docker compose setting for development with containerized dependencies like mariadb and redis."
+authors = ["Akul Mathur akulmat@proton.me"]
+readme = "README.md"
+packages = [{include = "frappe_erpnext"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+frappe-bench = "^5.17.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

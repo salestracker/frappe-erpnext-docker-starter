@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "nice-napi": "^1.0.2",
+    "yarn": "^1.22.19"
+  }
+}
