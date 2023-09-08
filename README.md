@@ -29,10 +29,12 @@ This is where this repo comes in.
 
 ## Salient Features
 
-- Have a template where you can keep frappe framework as an installable dependency via virtual environment.
+- Have a template where you can keep frappe framework as an installable dependency via virtual environment and 
+create as many projects.
 - Use well known python project setup flow. 
 - Use docker compose to build container services & don't corrupt existing configuration or settings on local.
 - Ensure isolation for development environment.
+
 
 ## Getting Started
 
@@ -50,5 +52,9 @@ Ensure you have gone through [ERPNext Installation Guide](https://github.com/D-c
 1. Run `poetry install` to install frappe & it's dependencies.
 2. Run `docker compose up -f docker-compose.yml --build`
 3. Follow [steps 13](https://github.com/D-codE-Hub/ERPNext-installation-Guide/blob/main/README.md#step-13-initilise-the-frappe-bench--install-frappe-latest-version) onwards
+4. Update mariadb environment in `docker-compose.yml` file to match your new app setup like:
+```bash
+bench new-site mynewsite.localhost --no-mariadb-socket --mariadb-root-password MARIADB_PASSWORD --db-type mariadb --db-root-username root --db-name DBNAME --db-password DBPWD [--set-default [--verbose]]
+```
 
 Note: You can use frappe-branch version-14. This repository has been tested with this version.
