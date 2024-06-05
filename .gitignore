@@ -1,0 +1,4 @@
+node_modules
+patches.txt
+frappe_*/
+frappe-*/

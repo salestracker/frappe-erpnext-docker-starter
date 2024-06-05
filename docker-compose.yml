@@ -1,35 +1,37 @@
-version: '3.8'
-
+name: frappe-compose
 networks:
-  thebridge:
-    driver: bridge
-
-
+    thebridge:
+        driver: bridge
 services:
-
-  mariadb:
-    image: mariadb:latest
-    container_name: mariadb_container
-    volumes:
-      - ./infra/config/my.cnf:/etc/mysql/my.cnf
-      - maria-volume:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: MARIADB_PASSWORD
-      MYSQL_DATABASE: _4d428179248edb3e
-      MYSQL_USER: _4d428179248edb3e
-      MYSQL_PASSWORD: sEOCR5gAhDcxBQNw
-    ports:
-      - "3306:3306"
-    networks:
-      - thebridge
-
-  redis-cache:
-    image: redis:latest
-    container_name: redis_cache_container
-    ports:
-      - "6379:6379"
-    networks:
-      - thebridge
-
+    mariadb:
+        image: mariadb:latest
+        container_name: mariadb_container
+        volumes:
+            - type: bind
+              source: ./infra/config/my.cnf
+              target: /etc/mysql/my.cnf
+            - type: volume
+              source: maria-volume
+              target: /var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: MARIADB_PASSWORD
+            MYSQL_DATABASE: _4d428179248edb3e
+            MYSQL_USER: _4d428179248edb3e
+            MYSQL_PASSWORD: sEOCR5gAhDcxBQNw
+        ports:
+            - target: 3306
+              published: "3306"
+              mode: ingress
+        networks:
+            - thebridge
+    redis-cache:
+        image: redis:latest
+        container_name: redis_cache_container
+        ports:
+            - target: 6379
+              published: "6379"
+              mode: ingress
+        networks:
+            - thebridge
 volumes:
-  maria-volume:
+    maria-volume:

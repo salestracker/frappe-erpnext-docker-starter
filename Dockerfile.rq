@@ -1,0 +1,15 @@
+# Use a base image with Python 3 and Ubuntu (adjust the base image as needed)
+ARG PYTHON_VERSION
+FROM python:$PYTHON_VERSION-slim-buster
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    python3-pip
+
+
+RUN pip3 install -U pip redis rq
+
+ENTRYPOINT ["bash", "-c", "rq worker -v --url redis://redis_container:6379"]

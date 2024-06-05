@@ -2,9 +2,9 @@
 name = "frappe-erpnext-docker-starter"
 version = "0.1.0"
 description = "Frappe docker compose setting for development with containerized dependencies like mariadb and redis."
-authors = ["Akul Mathur akulmat@proton.me"]
+authors = ["Akul Mathur <akulmat@proton.me>"]
 readme = "README.md"
-packages = [{include = "frappe_erpnext"}]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.11"

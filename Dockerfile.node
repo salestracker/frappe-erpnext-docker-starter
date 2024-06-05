@@ -1,0 +1,6 @@
+FROM node:current-bookworm-slim
+
+RUN npm i socket.io @socket.io/redis-adapter redis
+
+
+
