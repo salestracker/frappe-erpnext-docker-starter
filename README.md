@@ -1,5 +1,7 @@
 # Frappe Docker Starter
 
+#### Note: Unstable. Work In Progress
+
 Frappe docker compose settings for development with containerized dependencies like mariadb and redis.
 
 ## Table of Contents
@@ -50,7 +52,10 @@ Ensure you have gone through [ERPNext Installation Guide](https://github.com/D-c
 ### Installation
 
 1. Run `poetry install` to install frappe & it's dependencies.
-2. Run `docker compose up -f docker-compose.yml --build`
+2. Run 
+```bash
+docker build --layers --rm --build-arg FRAPPE_BRANCH=<BRANCH_NAME> --build-arg FRAPPE_PATH=<GIT_URL> --build-arg PYTHON_VERSION=<PY_VERSION> -f Dockerfile -v $(pwd)/requirements.txt:/app/requirements.txt --no-cache -v $(pwd)/bench_apps/:/app/bench_apps/ -v $(pwd)/infra/config:/app/config --pull="minimum" .
+```
 3. Follow [steps 13](https://github.com/D-codE-Hub/ERPNext-installation-Guide/blob/main/README.md#step-13-initilise-the-frappe-bench--install-frappe-latest-version) onwards
 4. Update mariadb environment in `docker-compose.yml` file to match your new app setup like:
 ```bash
