@@ -5,11 +5,15 @@ description = "Frappe docker compose setting for development with containerized 
 authors = ["Akul Mathur <akulmat@proton.me>"]
 readme = "README.md"
 packages = []
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.11"
-frappe-bench = "^5.17.1"
+python = "~3.11"
+frappe-bench = "~5.22.6"
+wkhtmltopdf = {version = "~0.2", optional = false}
 
+[tool.poetry.group.dev.dependencies]
+honcho = "~1.1.0"
 
 [build-system]
 requires = ["poetry-core"]

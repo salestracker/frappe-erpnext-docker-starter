@@ -1,6 +1,8 @@
 # Use a base image with Python 3 and Ubuntu (adjust the base image as needed)
+
 ARG PYTHON_VERSION
-FROM python:$PYTHON_VERSION-slim-buster
+
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,6 +12,9 @@ RUN apt-get update && apt-get install -y \
     python3-pip
 
 
+# Build the final image with a minimal base
+FROM python:${PYTHON_VERSION}-slim AS final
+
 RUN pip3 install -U pip redis rq
 
-ENTRYPOINT ["bash", "-c", "rq worker -v --url redis://redis_container:6379"]
+ENTRYPOINT ["bash", "-c", "rq worker -v --url redis://redis-cache:6379"]

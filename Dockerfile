@@ -1,7 +1,11 @@
 # Use a base image with Python 3 and Ubuntu (adjust the base image as needed)
 # Use multi-stage builds for smaller final images
+
 ARG PYTHON_VERSION
-FROM python:$PYTHON_VERSION-slim AS builder
+
+ENV PYTHON_VERSION=$PYTHON_VERSION
+
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 # Install system dependencies
 RUN apt-get update && \
@@ -10,12 +14,14 @@ RUN apt-get update && \
         cron \
         libssl-dev \
         libffi-dev \
-        util-linux
+        util-linux \
+        gcc
 
 # Install dependencies in a separate stage
 WORKDIR /app
 
 # Build the final image with a minimal base
+ARG PYTHON_VERSION
 FROM python:${PYTHON_VERSION}-slim AS final
 
 # Set the working directory
@@ -31,23 +37,55 @@ RUN adduser --disabled-password \
     localuser
 
 # Assign privileges to non-privileged localuser for bench creation
+# Ensure the /app/bench_apps/ directory exists
+#RUN mkdir -p /app/bench_apps/
+
+RUN mkdir -p /app/node_modules/ #&& chown -R localuser:localuser /app/node_modules/
+
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    xz-utils && apt-get clean
+
+RUN curl -fsSL https://nodejs.org/dist/v20.14.0/node-v20.14.0-linux-arm64.tar.xz \
+    -o /tmp/node-v20.14.0-linux-arm64.tar.xz \
+    && tar -xJf /tmp/node-v20.14.0-linux-arm64.tar.xz -C /usr/local --strip-components=1 --no-same-owner \
+    && rm /tmp/node-v20.14.0-linux-arm64.tar.xz \
+    && ln -s /usr/local/bin/node /usr/local/bin/nodejs
+
+RUN apt-get update && apt-get install --no-install-recommends -y gcc python3-dev make cron g++ supervisor
+
+RUN chown -R localuser:localuser /app/
 RUN chown -R localuser:localuser /usr/bin/
-RUN chown -R localuser:localuser /app/bench_apps/
+#RUN chown -R localuser:localuser /app/bench_apps/
+RUN chown -R localuser:localuser /app/node_modules/
 
 USER localuser
 
-# Leverage cache for requirements.txt
-COPY requirements.txt .
+RUN npm install yarn corepack
+RUN ln -s /app/node_modules/yarn/bin/yarn /usr/bin/yarn
 
 # Environment variables (consider moving to .env file)
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-RUN python3 -m pip install -r requirements.txt && echo $(python -m pip freeze)
 
-# Define environment variables
-ARG FRAPPE_BRANCH
-ARG FRAPPE_PATH
+USER root
+RUN chmod 0644 /var/spool/cron/crontabs/
+RUN chown -R localuser:crontab /var/spool/cron/crontabs/
+RUN chmod -R 770 /var/spool/cron/crontabs/
+USER localuser
+RUN touch /var/spool/cron/crontabs/localuser
+
+#RUN ln -s /usr/local/bin/bench /usr/bin/bench && chmod +x /usr/bin/bench
+# Leverage cache for requirements.txt
+COPY requirements.txt .
+RUN python3 -m pip install -r requirements.txt
 
 RUN ln -s /home/localuser/.local/bin/bench /usr/bin/bench && chmod +x /usr/bin/bench
-RUN bench init --frappe-branch=$FRAPPE_BRANCH --frappe-path=$FRAPPE_PATH bench_apps/frappe-bench
+RUN ln -s /home/localuser/.local/bin/honcho /usr/bin/honcho && chmod +x /usr/bin/bench
+WORKDIR /app/bench_apps
+
+ARG FRAPPE_BRANCH
+ENV FRAPPE_BRANCH=${FRAPPE_BRANCH}
+

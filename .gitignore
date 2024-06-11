@@ -2,3 +2,8 @@ node_modules
 patches.txt
 frappe_*/
 frappe-*/
+.env
+node_modules
+.idea/
+.python-version
+.DS_Store
