@@ -10,7 +10,6 @@ FROM python:${PYTHON_VERSION}-slim AS builder
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        mariadb-client-10.5 \
         cron \
         libssl-dev \
         libffi-dev \
@@ -38,7 +37,6 @@ RUN adduser --disabled-password \
 
 # Assign privileges to non-privileged localuser for bench creation
 # Ensure the /app/bench_apps/ directory exists
-#RUN mkdir -p /app/bench_apps/
 
 RUN mkdir -p /app/node_modules/ #&& chown -R localuser:localuser /app/node_modules/
 
@@ -53,11 +51,13 @@ RUN curl -fsSL https://nodejs.org/dist/v20.14.0/node-v20.14.0-linux-arm64.tar.xz
     && rm /tmp/node-v20.14.0-linux-arm64.tar.xz \
     && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-RUN apt-get update && apt-get install --no-install-recommends -y gcc python3-dev make cron g++ supervisor
+RUN apt-get update && apt-get install \
+    --no-install-recommends -y gcc \
+    python3-dev make cron g++ supervisor \
+    mariadb-client-10.5
 
 RUN chown -R localuser:localuser /app/
 RUN chown -R localuser:localuser /usr/bin/
-#RUN chown -R localuser:localuser /app/bench_apps/
 RUN chown -R localuser:localuser /app/node_modules/
 
 USER localuser
@@ -74,11 +74,11 @@ USER root
 RUN chmod 0644 /var/spool/cron/crontabs/
 RUN chown -R localuser:crontab /var/spool/cron/crontabs/
 RUN chmod -R 770 /var/spool/cron/crontabs/
+
 USER localuser
+#this is needed to allow modifying crontabs/ in non-root accounts
 RUN touch /var/spool/cron/crontabs/localuser
 
-#RUN ln -s /usr/local/bin/bench /usr/bin/bench && chmod +x /usr/bin/bench
-# Leverage cache for requirements.txt
 COPY requirements.txt .
 RUN python3 -m pip install -r requirements.txt
 
@@ -88,4 +88,7 @@ WORKDIR /app/bench_apps
 
 ARG FRAPPE_BRANCH
 ENV FRAPPE_BRANCH=${FRAPPE_BRANCH}
+
+
+
 

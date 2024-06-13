@@ -20,20 +20,18 @@ services:
             - type: volume
               source: maria-volume
               target: /var/lib/mysql
+            - type: bind
+              source: ./bench_apps/mariadb_config.sh
+              target: /bin/mariadb_config.sh
         environment:
-          - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1
-#          - MARIADB_ROOT_PASSWORD=${MARIADB_PASSWORD}
+          - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
           - MARIADB_DATABASE=${MARIADB_DATABASE}
           - MARIADB_USER=${MARIADB_USER}
           - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-#          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-#          - MYSQL_DATABASE=${MYSQL_DATABASE}
-#          - MYSQL_USER=${MYSQL_USER}
-#          - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-#        healthcheck:
-#          test: mariadb-admin ping -h localhost --password=${MARIADB_PASSWORD}
-#          interval: 10s
-#          retries: 5
+        healthcheck:
+          test: mariadb-admin ping -h localhost -u root --password=${MARIADB_ROOT_PASSWORD}
+          interval: 10s
+          retries: 5
         deploy:
           restart_policy:
             condition: on-failure
@@ -65,7 +63,7 @@ services:
             mode: ingress
 
     frappe:
-      entrypoint: ["bash", "-c", "chmod +x bench_setup_scripts.sh && sh bench_setup_scripts.sh"]
+      entrypoint: ["bash", "-c", "./bootstrap.sh"]
       working_dir: /app/bench_apps
       build:
         context: .
@@ -77,9 +75,7 @@ services:
         - PYTHON_VERSION=${PYTHON_VERSION}
         - FRAPPE_BRANCH=${FRAPPE_BRANCH}
         - SHELL=/bin/bash
-#        - MYSQL_DATABASE=${MYSQL_DATABASE}
-#        - MYSQL_USER=${MYSQL_USER}
-        - MARIADB_ROOT_PASSWORD=${MARIADB_PASSWORD}
+        - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
         - MARIADB_PASSWORD=${MARIADB_PASSWORD}
         - MARIADB_DATABASE=${MARIADB_DATABASE}
         - MARIADB_USER=${MARIADB_USER}
@@ -95,6 +91,9 @@ services:
         - type: bind
           source: infra/config/my.cnf
           target: /usr/local/etc/my.cnf
+        - type: bind
+          source: bench_apps/bootstrap.sh
+          target: /app/bench_apps/bootstrap.sh
       ports:
         - 8000-8005:8000-8005
         - 9000-9005:9000-9005

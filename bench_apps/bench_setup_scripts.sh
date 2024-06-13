@@ -17,23 +17,15 @@ bench set-redis-cache-host redis-cache:6379
 bench set-redis-queue-host redis-cache:6379
 bench set-redis-socketio-host redis-cache:6379
 
-# setup dummy erpnext site
+# setup dummy site
 if [ ! -d "sites/lms.localhost" ]; then
   bench get-app lms https://github.com/frappe/lms.git;
-else
-  bench drop-site lms.localhost --force;
-#  rm -rf sites/lms.localhost;
-#  rm -rf apps/lms;
+  bench new-site lms.localhost --force --admin-password=admin --db-host=mariadb --db-port=3306 --db-password=${MARIADB_PASSWORD} --db-user=${MARIADB_USER} --mariadb-root-password=${MARIADB_ROOT_PASSWORD} --mariadb-user-host-login-scope="'${MARIADB_USER}'@'mariadb'" --verbose --install-app lms
 fi;
-bench new-site lms.localhost --force \
---admin-password=admin \
---db-name=${MARIADB_DATABASE} \
---db-host=mariadb --db-port=3306 \
---db-password=${MARIADB_PASSWORD} \
---db-user=${MARIADB_USER} \
---mariadb-root-password=${MARIADB_ROOT_PASSWORD} \
---mariadb-user-host-login-scope='${MARIADB_USER}@mariadb'
---set-default \
---verbose --install-app lms
 
-bench start
+bench reinstall --yes --admin-password=admin --mariadb-root-password=${MARIADB_ROOT_PASSWORD}
+
+bench use lms.localhost
+
+echo "starting frappe server..."
+bench serve
