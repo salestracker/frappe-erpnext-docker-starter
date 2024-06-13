@@ -9,9 +9,6 @@ x-common-redis: &common-redis
     - thebridge
 
 
-networks:
-    thebridge:
-        driver: bridge
 services:
     mariadb:
         image: mariadb:latest
@@ -24,10 +21,22 @@ services:
               source: maria-volume
               target: /var/lib/mysql
         environment:
-          - MARIADB_ROOT_PASSWORD=${MARIADB_PASSWORD}
-          - MYSQL_DATABASE=${MYSQL_DATABASE}
-          - MYSQL_USER=${MYSQL_USER}
-          - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+          - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1
+#          - MARIADB_ROOT_PASSWORD=${MARIADB_PASSWORD}
+          - MARIADB_DATABASE=${MARIADB_DATABASE}
+          - MARIADB_USER=${MARIADB_USER}
+          - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+#          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+#          - MYSQL_DATABASE=${MYSQL_DATABASE}
+#          - MYSQL_USER=${MYSQL_USER}
+#          - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+#        healthcheck:
+#          test: mariadb-admin ping -h localhost --password=${MARIADB_PASSWORD}
+#          interval: 10s
+#          retries: 5
+        deploy:
+          restart_policy:
+            condition: on-failure
         ports:
             - target: 3306
               published: "3306"
@@ -56,7 +65,7 @@ services:
             mode: ingress
 
     frappe:
-      entrypoint: ["bash", "-c", "pwd && ls -al && chmod +x bench_setup_scripts.sh && sh bench_setup_scripts.sh"]
+      entrypoint: ["bash", "-c", "chmod +x bench_setup_scripts.sh && sh bench_setup_scripts.sh"]
       working_dir: /app/bench_apps
       build:
         context: .
@@ -67,11 +76,19 @@ services:
       environment:
         - PYTHON_VERSION=${PYTHON_VERSION}
         - FRAPPE_BRANCH=${FRAPPE_BRANCH}
+        - SHELL=/bin/bash
+#        - MYSQL_DATABASE=${MYSQL_DATABASE}
+#        - MYSQL_USER=${MYSQL_USER}
+        - MARIADB_ROOT_PASSWORD=${MARIADB_PASSWORD}
+        - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+        - MARIADB_DATABASE=${MARIADB_DATABASE}
+        - MARIADB_USER=${MARIADB_USER}
       depends_on:
         - mariadb
         - redis-cache
         - redis-rq
       volumes:
+        - workspace:/workspace:cached
         - type: bind
           source: bench_apps/
           target: /app/bench_apps/
@@ -79,11 +96,17 @@ services:
           source: infra/config/my.cnf
           target: /usr/local/etc/my.cnf
       ports:
-        - target: 8000
-          published: "8000"
-          mode: ingress
+        - 8000-8005:8000-8005
+        - 9000-9005:9000-9005
       networks:
         - thebridge
 
+networks:
+    thebridge:
+        driver: bridge
+
 volumes:
     maria-volume:
+      driver: local
+    workspace:
+      driver: local
