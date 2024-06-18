@@ -14,7 +14,19 @@ cd frappe-bench/
 
 bench set-mariadb-host mariadb
 bench set-redis-cache-host redis-cache:6379
-bench set-redis-queue-host redis-queue:6379
-bench set-redis-socketio-host redis_socketio:6379
+bench set-redis-queue-host redis-cache:6379
+bench set-redis-socketio-host redis-cache:6379
 
-bench start
+# setup dummy site
+if [ ! -d "sites/lms.localhost" ]; then
+  bench get-app lms https://github.com/frappe/lms.git;
+  bench new-site lms.localhost --force --admin-password=admin --db-host=mariadb --db-port=3306 --db-password=${MARIADB_PASSWORD} --db-user=${MARIADB_USER} --mariadb-root-password=${MARIADB_ROOT_PASSWORD} --mariadb-user-host-login-scope="%" --no-mariadb-socket --verbose --install-app lms
+fi;
+
+#bench reinstall --yes --admin-password=admin --mariadb-root-password=${MARIADB_ROOT_PASSWORD}
+
+#bench use lms.localhost
+bench use lib_mgmt.localhost
+
+echo "starting frappe server..."
+bench serve

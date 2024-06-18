@@ -38,7 +38,7 @@ RUN adduser --disabled-password \
 # Assign privileges to non-privileged localuser for bench creation
 # Ensure the /app/bench_apps/ directory exists
 
-RUN mkdir -p /app/node_modules/ #&& chown -R localuser:localuser /app/node_modules/
+RUN mkdir -p /app/node_modules/
 
 # Install required packages
 RUN apt-get update && apt-get install -y \
