@@ -63,7 +63,7 @@ MARIADB_USER=${MARIADB_USER:?error}
 MARIADB_PASSWORD=${MARIADB_PASSWORD:?error}
 FRAPPE_BRANCH=${FRAPPE_BRANCH:?error}
 ```
-4. Add a `bench_setup_scripts.sh` like:
+4. Add a `bench_apps/bench_setup_scripts.sh` like:
 ```bash
 #!/bin/bash
 
